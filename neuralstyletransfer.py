@@ -119,7 +119,7 @@ def compute_loss(output, content_features, style_features, style_grams, alpha, b
   total_loss = get_total_loss(alpha, beta, content_loss, style_loss) 
   return total_loss
 
-def run(content_path, style_path, epoch, alpha = 1, beta = 1e6, lr=0.003):
+def run(content_path, style_path, epoch, alpha, beta, lr):
   model = get_model() 
   content = load_image(content_path).to(device)
   style = load_image(style_path).to(device)
