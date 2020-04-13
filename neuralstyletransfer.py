@@ -132,7 +132,7 @@ def run(content_path, style_path, epoch, alpha, beta, lr):
   optimizer = optim.Adam([output], lr=lr)
 
   best_result, best_loss = None, float('inf')
-  show_every = epoch//10
+  show_every = int(epoch/10) + 1
   
   for ii in range(epoch):
       total_loss = compute_loss(output, content_features, style_features, style_grams, alpha, beta, model)
