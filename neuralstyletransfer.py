@@ -18,7 +18,6 @@ import argparse
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(device)
 
-style_weight = 0.2
 alpha = 1
 beta = 1e6
 style_layers = {
@@ -32,6 +31,13 @@ style_layers = {
 content_layers = {
     '21': 'conv4_2'
 }
+
+style_weights = {'conv1_1': 0.2,
+                  'conv2_1': 0.2,
+                  'conv3_1': 0.2,
+                  'conv4_1': 0.2,
+                  'conv5_1': 0.2}
+
 
 def get_model():
   vgg = models.vgg19(pretrained=True).features
@@ -74,35 +80,27 @@ def get_total_loss(content_weight, style_weight, content_loss, style_loss):
 
 def load_image(path, max_size = 512):
   img = Image.open(path).convert('RGB')
-  print(img.size)
-  #convert to lambda
-  if max(img.size) > max_size:
-    size = max_size  
-  else: 
-    size = max(img.size)
-  print(size)
+  size = max_size if max(img.size) > max_size else max(img.size)
   transform = transforms.Compose([
                                   transforms.Resize(size),
                                   transforms.ToTensor(),
-                                  transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+                                  transforms.Normalize((0.485, 0.456, 0.406), 
+                                             (0.229, 0.224, 0.225))
   ])
 
   img = transform(img)[:3,:,:].unsqueeze(0)
-  print(img.size())
   return img
 
 def im_convert(tensor):
-    """ Display a tensor as an image. """
-    
     image = tensor.to("cpu").clone().detach()
     image = image.numpy().squeeze()
     image = image.transpose(1,2,0)
-    image = image * np.array((0.5, 0.5, 0.5)) + np.array((0.5, 0.5, 0.5))
+    image = image * np.array((0.229, 0.224, 0.225)) + np.array((0.485, 0.456, 0.406))
+    image*=255
     image = image.clip(0, 255).astype(np.uint8)
-
     return image
 
-def compute_loss(output, content_features, style_features, style_grams, style_weights, model):
+def compute_loss(output, content_features, style_features, style_grams, alpha, beta, model):
   output_content_features, output_style_features = get_features(output, output, model)
 
   content_loss = 0
@@ -121,7 +119,7 @@ def compute_loss(output, content_features, style_features, style_grams, style_we
   total_loss = get_total_loss(alpha, beta, content_loss, style_loss) 
   return total_loss
 
-def run(content_path, style_path, epoch):
+def run(content_path, style_path, epoch, alpha = 1, beta = 1e6, lr=0.003):
   model = get_model() 
   content = load_image(content_path).to(device)
   style = load_image(style_path).to(device)
@@ -129,23 +127,15 @@ def run(content_path, style_path, epoch):
   _, style_features = get_features(content, style, model)
 
   style_grams = {layer: gram_matrix(style_features[layer]) for layer in  style_features}
-
-  style_weights = {'conv1_1': 0.2,
-                  'conv2_1': 0.2,
-                  'conv3_1': 0.2,
-                  'conv4_1': 0.2,
-                  'conv5_1': 0.2}
-
   
   output = content.clone().requires_grad_(True).to(device)
-  optimizer = optim.Adam([output], lr=0.003)
+  optimizer = optim.Adam([output], lr=lr)
 
   best_result, best_loss = None, float('inf')
   show_every = epoch//10
   
   for ii in range(epoch):
-    
-      total_loss = compute_loss(output, content_features, style_features, style_grams, style_weights, model)
+      total_loss = compute_loss(output, content_features, style_features, style_grams, alpha, beta, model)
       optimizer.zero_grad()
       total_loss.backward()
       optimizer.step()
@@ -164,11 +154,14 @@ def main():
   parser = argparse.ArgumentParser(description='NeuralStyleTransfer')
   parser.add_argument('-c', dest='content_path', help="content image path", required=True)
   parser.add_argument('-s', dest='style_path', help="style image path", required=True)
-  parser.add_argument('-e', dest='epoch', help="iteration count", default=1000, type=int)
   parser.add_argument('-r', dest='result_path', help="result image path", required=True)
+  parser.add_argument('-e', dest='epoch', help="iteration count", default=1000, type=int)
+  parser.add_argument('-a', dest='alpha', help="weighting factor for content loss", default=1, type=np.uint32)
+  parser.add_argument('-b', dest='beta', help="weighting factor for style loss", default=1e6, type=np.uint32)
+  parser.add_argument('-lr', dest='learning_rate', help="learning_rate to use in optimization", default=0.003, type=float)
 
   args = parser.parse_args()
-  output = run(args.content_path, args.style_path, args.epoch)
+  output = run(args.content_path, args.style_path, args.epoch, args.alpha, args.beta, args.learning_rate)
   Image.fromarray(output).save(args.result_path)
 
 if __name__ == "__main__":
