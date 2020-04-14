@@ -11,7 +11,6 @@ import torch
 from torchvision import transforms, models
 from PIL import Image
 import torch.optim as optim
-import matplotlib.pyplot as plt
 import numpy as np
 import argparse
 
