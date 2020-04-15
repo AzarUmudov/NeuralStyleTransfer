@@ -52,4 +52,40 @@ Representation of style transfer algorithm in [ the paper ](https://www.cv-found
 Clone the repo:
 ```
 git clone https://github.com/AzarUmudov/NeuralStyleTransfer.git
+cd <path of NeuralStyleTransfer project in your computer>
+pip install -r requirements.txt
 ```
+Running neuralstyletransfer.py:
+```
+Example: neuralstyletransfer.py -c "content path" -s "style path" -r "result path"
+```
+Recommended paramaters in the paper:
+
+| Parameters | Values |
+| ---------- |:------:| 
+| alpha      | 1      | 
+| beta       | 1e6    |
+| lr         | 0.003  | 
+| epoch      | 2000   | 
+
+If you want to change the parameters, you can use following guide:
+```
+-e for epoch count
+-a for alpha
+-b for beta
+-lr for learning_rate
+```
+
+## Examples 
+<p align="left">
+  <img width="280" height="220" src="https://github.com/AzarUmudov/NeuralStyleTransfer/blob/master/Examples/content1.jpg">
+  <img width="280" height="220" src="https://github.com/AzarUmudov/NeuralStyleTransfer/blob/master/Examples/style1.jpg">
+  <img width="280" height="220" src="https://github.com/AzarUmudov/NeuralStyleTransfer/blob/master/Examples/result1.jpg">
+</p>
+
+
+<p align="left">
+  <img width="280" height="220" src="https://github.com/AzarUmudov/NeuralStyleTransfer/blob/master/Examples/content2.jpg">
+  <img width="280" height="220" src="https://github.com/AzarUmudov/NeuralStyleTransfer/blob/master/Examples/style2.jpg">
+  <img width="280" height="220" src="https://github.com/AzarUmudov/NeuralStyleTransfer/blob/master/Examples/result2.jpg">
+</p>
