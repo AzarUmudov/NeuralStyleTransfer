@@ -4,6 +4,8 @@ from PIL import Image
 import torch.optim as optim
 import numpy as np
 import argparse
+import requests
+from io import BytesIO
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(device)
@@ -67,7 +69,12 @@ def get_total_loss(content_weight, style_weight, content_loss, style_loss):
   return total_loss
 
 def load_image(path, max_size = 512):
-  img = Image.open(path).convert('RGB')
+  try:
+    response = requests.get(path)
+    img = Image.open(BytesIO(response.content))
+  except:
+    img = Image.open(path).convert('RGB')
+	
   size = max_size if max(img.size) > max_size else max(img.size)
   transform = transforms.Compose([
                                   transforms.Resize(size),
@@ -143,7 +150,7 @@ def main():
   parser.add_argument('-c', dest='content_path', help="content image path", required=True)
   parser.add_argument('-s', dest='style_path', help="style image path", required=True)
   parser.add_argument('-r', dest='result_path', help="result image path", required=True)
-  parser.add_argument('-e', dest='epoch', help="iteration count", default=1000, type=int)
+  parser.add_argument('-e', dest='epoch', help="iteration count", default=2000, type=int)
   parser.add_argument('-a', dest='alpha', help="weighting factor for content loss", default=1, type=np.uint32)
   parser.add_argument('-b', dest='beta', help="weighting factor for style loss", default=1e6, type=np.uint32)
   parser.add_argument('-lr', dest='learning_rate', help="learning_rate to use in optimization", default=0.003, type=float)
