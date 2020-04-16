@@ -12,7 +12,7 @@ Architecture of VGG-19:
 
 Referring to [ the paper ](https://www.cv-foundation.org/openaccess/content_cvpr_2016/papers/Gatys_Image_Style_Transfer_CVPR_2016_paper.pdf),  ‘conv1_1’, ‘conv2_1’, ‘conv3_1’, ‘conv4_1’ and ‘conv5_1’ are used for style representation layers where ‘conv4_2’ for content representation. 
 
-Getting features through the layers, to optimize result image, Style Transfer uses 3 losses: **Content loss**, **Style Loss** and **Total Loss**
+To optimize result image, Style Transfer uses 3 losses: **Content loss**, **Style Loss** and **Total Loss**
 
 ### Content Loss
 Content loss consists of squared error between feature representations of original image and generated image:
